@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чатик</title>
+
+</head>
+<body>
+
+    <input type="text" id="messenge" placeholder="Enter messenge" autocomplete="off">
+
+    <button id="submit">Send</button>
+
+    <ul id="messenges"></ul>
+    
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-database.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyD2rYjv5EcGsBEOoEs3iYTFZLiGNnD5y0g",
+    authDomain: "anapa-2020.firebaseapp.com",
+    databaseURL: "https://anapa-2020.firebaseio.com",
+    projectId: "anapa-2020",
+    storageBucket: "anapa-2020.appspot.com",
+    messagingSenderId: "396977971909",
+    appId: "1:396977971909:web:65cfca88f701b2ea5a86ac"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  
+var myName = prompt('Введите ваше имя','Егор')
+//-----------------------добавление в БД---------------
+document.getElementById('submit').onclick = function(){
+
+    var messenge = document.getElementById('messenge').value
+    document.getElementById('messenge').value = '';
+
+    firebase.database().ref('messenge').push().set({
+        "sender":myName,
+        "messenge":messenge
+    });
+    console.log('Сообщение отправлено')
+}
+//--------------------------распечатка из БД-------------
+
+firebase.database().ref('messenge').on('child_added', function(snapshot){
+    var html = '';
+
+    html +="<li id='message"+ snapshot.key +"'>";
+    html += snapshot.val().sender + ' : ' + snapshot.val().messenge;
+
+    if (snapshot.val().sender == myName){
+        html += "<button data-id='"+ snapshot.key + "' onclick='deleteMessenge(this);'>";
+            
+            html += "Удалить";
+        html+= "</button>";
+    }
+
+    html += "</li>";
+
+    document.getElementById('messenges').innerHTML += html;
+})
+
+//-------------Удаление---------------------
+function deleteMessenge(self){
+    var messengeId = self.getAttribute("data-id");
+    console.log(messengeId)
+    firebase.database().ref('messenge/'+messengeId).remove();
+}
+
+//-----------------Замена сообщения----------------------
+firebase.database().ref('messenge').on('child_removed', function(snapshot){
+
+    document.getElementById('message' +snapshot.key).innerHTML = 'Это сообщение удалено'
+
+})
+
+</script>
+</body>
+</html>
